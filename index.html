@@ -57,7 +57,7 @@
   <h1>BIB Detector</h1>
 
   <video id="video" autoplay playsinline></video>
-  <canvas id="canvas"></canvas>
+  <canvas id="canvas" style="display: none;"></canvas>
 
   <div id="controls">
     <button id="startBtn">Start Detection</button>
@@ -75,7 +75,7 @@
     let detecting = false;
     let animationFrameId;
 
-    // ✅ Start camera with REAR camera preference
+    // ✅ Start rear camera
     async function startCamera() {
       try {
         stream = await navigator.mediaDevices.getUserMedia({
@@ -93,18 +93,20 @@
       }
     }
 
-    // 🟢 Start Detection Loop
+    // 🟢 Start Detection
     async function startDetection() {
       if (detecting) return;
       detecting = true;
       statusEl.textContent = "Detecting...";
+      video.style.display = "none";
+      canvas.style.display = "block";
 
       async function detectFrame() {
         if (!detecting) return;
 
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        // Here’s where your Roboflow or model detection will run
+        // Here you will add Roboflow detection logic later
         // e.g., const predictions = await model.detect(video);
         // drawBoxes(predictions);
 
@@ -118,6 +120,8 @@
     function stopDetection() {
       detecting = false;
       cancelAnimationFrame(animationFrameId);
+      canvas.style.display = "none";
+      video.style.display = "block";
       statusEl.textContent = "Detection stopped.";
     }
 
