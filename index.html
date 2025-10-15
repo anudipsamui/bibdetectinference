@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BIB Detector (Roboflow API)</title>
+  <style>
+    body { font-family: Arial; text-align: center; background: #111; color: white; }
+    video, canvas { width: 90%; border-radius: 10px; margin-top: 10px; }
+    button { padding: 10px 20px; font-size: 16px; margin: 10px; cursor: pointer; }
+    pre { text-align: left; width: 90%; margin: 0 auto; background: #222; padding: 10px; border-radius: 10px; }
+  </style>
+</head>
+<body>
+  <h2>🎯 BIB Number Detector</h2>
+  <video id="video" autoplay playsinline></video><br>
+  <button id="startBtn">Start Camera</button>
+  <button id="detectBtn">Detect BIB</button>
+  <canvas id="canvas" style="display:none;"></canvas>
+  <pre id="result"></pre>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const resultBox = document.getElementById('result');
+
+    // 🟢 Replace with your own Roboflow model details
+    const ROBOFLOW_API_KEY = "b6WP8Jycybyu3u4mLtrM";
+    const MODEL_ID = "bib_number_detection";
+    const VERSION = 2;
+
+    document.getElementById('startBtn').onclick = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+      } catch (e) {
+        alert("Camera access denied: " + e);
+      }
+    };
+
+    document.getElementById('detectBtn').onclick = async () => {
+      const ctx = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+      const imgData = canvas.toDataURL('image/jpeg');
+
+      resultBox.textContent = "Detecting...";
+      
+      const response = await fetch(
+        `https://detect.roboflow.com/${MODEL_ID}/${VERSION}?api_key=${ROBOFLOW_API_KEY}`,
+        {
+          method: "POST",
+          body: imgData.split(",")[1],
+          headers: { "Content-Type": "application/x-www-form-urlencoded" }
+        }
+      );
+
+      const json = await response.json();
+      resultBox.textContent = JSON.stringify(json, null, 2);
+    };
+  </script>
+</body>
+</html>
